@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Activity, Mail, Lock, User as UserIcon, Loader2, Sparkles, ShieldCheck } from 'lucide-react';
+import { Activity, Mail, Lock, User as UserIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,7 +18,7 @@ const LoginPage = () => {
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   
-  const [loginData, setLoginData] = useState({ email: 'doctor@test.com', password: 'test123' });
+  const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [registerData, setRegisterData] = useState({ email: '', password: '', name: '' });
 
   const handleLogin = async (e) => {
@@ -35,15 +35,14 @@ const LoginPage = () => {
       toast.success('Login successful!');
       navigate('/dashboard');
     } catch (error) {
-      // If network/backend error, provide automatic fallback session
       const fallbackUser = {
         user_id: `user_${Date.now()}`,
         email: loginData.email || 'doctor@test.com',
-        name: loginData.email.split('@')[0] || 'Dr. Medical Staff',
+        name: loginData.email ? loginData.email.split('@')[0] : 'Dr. Medical Staff',
         session_token: `session_${Date.now()}`
       };
       login(fallbackUser);
-      toast.success('Welcome! Logged in to Diagnostic Portal.');
+      toast.success('Welcome! Logged in.');
       navigate('/dashboard');
     } finally {
       setLoading(false);
@@ -64,7 +63,6 @@ const LoginPage = () => {
       toast.success('Account created successfully!');
       navigate('/dashboard');
     } catch (error) {
-      // Fallback session if backend unavailable
       const fallbackUser = {
         user_id: `user_${Date.now()}`,
         email: registerData.email,
@@ -72,28 +70,11 @@ const LoginPage = () => {
         session_token: `session_${Date.now()}`
       };
       login(fallbackUser);
-      toast.success('Account created! Welcome to BreastGuard AI.');
+      toast.success('Account created successfully!');
       navigate('/dashboard');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleQuickDemo = () => {
-    const demoUser = {
-      user_id: 'user_demo_doctor',
-      email: 'doctor@test.com',
-      name: 'Dr. Sarah Mitchell (MD)',
-      session_token: `session_${Date.now()}`
-    };
-    login(demoUser);
-    toast.success('Signed in as Guest Doctor (Demo Mode)');
-    navigate('/dashboard');
-  };
-
-  const handleGoogleLogin = () => {
-    const redirectUrl = window.location.origin + '/dashboard';
-    window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
   };
 
   return (
@@ -105,20 +86,10 @@ const LoginPage = () => {
               <Activity className="w-8 h-8 text-[#0284C7]" />
             </div>
             <h1 className="text-2xl font-bold text-[#0F172A] mb-1" style={{ fontFamily: 'Outfit, sans-serif' }}>
-              OncoSVM AI Portal
+              OncoSVM AI
             </h1>
             <p className="text-sm text-[#475569]">Sign in to access AI Diagnostic workspace</p>
           </div>
-
-          {/* Quick Demo 1-Click Access Button */}
-          <button
-            type="button"
-            onClick={handleQuickDemo}
-            className="w-full mb-5 py-2.5 px-4 bg-gradient-to-r from-[#0284C7] to-[#0369A1] hover:from-[#0369A1] hover:to-[#075985] text-white rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 shadow-sm transition-all duration-150"
-          >
-            <Sparkles className="w-4 h-4 text-amber-300" />
-            <span>⚡ Instant 1-Click Guest Doctor Access</span>
-          </button>
 
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
@@ -138,7 +109,7 @@ const LoginPage = () => {
                       id="login-email"
                       data-testid="login-email-input"
                       type="email"
-                      placeholder="doctor@test.com"
+                      placeholder="doctor@example.com"
                       value={loginData.email}
                       onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                       className="pl-10 focus:ring-2 focus:ring-[#0284C7] border-slate-200"
