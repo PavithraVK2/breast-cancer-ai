@@ -64,4 +64,4 @@ def train_svm_model():
 
 if __name__ == '__main__':
     metadata = train_svm_model()
-    print("\n✓ Training completed successfully!")
+    print("\n[OK] Training completed successfully!")
