@@ -12,31 +12,25 @@ import History from '@/pages/History';
 import About from '@/pages/About';
 import FeatureGlossary from '@/pages/FeatureGlossary';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import ChatWidget from '@/components/ChatWidget';
-import { useAuth } from '@/contexts/AuthContext';
 import '@/App.css';
 
 function AppRouter() {
   const location = window.location;
-  const { user } = useAuth();
   if (location.hash?.includes('session_id=')) {
     return <AuthCallback />;
   }
   
   return (
-    <>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
-        <Route path="/glossary" element={<ProtectedRoute><FeatureGlossary /></ProtectedRoute>} />
-        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/prediction" element={<ProtectedRoute><PredictionForm /></ProtectedRoute>} />
-        <Route path="/result" element={<ProtectedRoute><PredictionResult /></ProtectedRoute>} />
-        <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
-      </Routes>
-      {user && <ChatWidget />}
-    </>
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
+      <Route path="/glossary" element={<ProtectedRoute><FeatureGlossary /></ProtectedRoute>} />
+      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/prediction" element={<ProtectedRoute><PredictionForm /></ProtectedRoute>} />
+      <Route path="/result" element={<ProtectedRoute><PredictionResult /></ProtectedRoute>} />
+      <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
+    </Routes>
   );
 }
 
