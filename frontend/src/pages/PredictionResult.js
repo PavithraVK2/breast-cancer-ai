@@ -58,7 +58,7 @@ const PredictionResult = () => {
   };
 
   const handleCopySummary = () => {
-    const summary = `BreastGuard AI Diagnostic Summary\nPatient ID: ${prediction.patient_name}\nVerdict: ${prediction.result}\nConfidence: ${confidence}%\nPrediction ID: ${prediction.prediction_id}\nDate: ${new Date(prediction.created_at).toLocaleString()}`;
+    const summary = `OncoSVM AI Diagnostic Summary\nPatient ID: ${prediction.patient_name}\nVerdict: ${prediction.result}\nConfidence: ${confidence}%\nPrediction ID: ${prediction.prediction_id}\nDate: ${new Date(prediction.created_at).toLocaleString()}`;
     navigator.clipboard.writeText(summary);
     toast.success('Clinical diagnostic summary copied to clipboard');
   };

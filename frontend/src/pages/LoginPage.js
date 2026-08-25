@@ -105,7 +105,7 @@ const LoginPage = () => {
               <Activity className="w-8 h-8 text-[#0284C7]" />
             </div>
             <h1 className="text-2xl font-bold text-[#0F172A] mb-1" style={{ fontFamily: 'Outfit, sans-serif' }}>
-              BreastGuard AI Portal
+              OncoSVM AI Portal
             </h1>
             <p className="text-sm text-[#475569]">Sign in to access AI Diagnostic workspace</p>
           </div>
