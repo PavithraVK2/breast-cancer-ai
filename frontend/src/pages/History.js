@@ -35,13 +35,26 @@ const History = () => {
   const [filter, setFilter] = useState('all');
 
   const fetchPredictions = async () => {
+    let localPreds = [];
+    try {
+      localPreds = JSON.parse(localStorage.getItem('breastguard_predictions') || '[]');
+    } catch (e) {}
+
     try {
       const response = await axios.get(`${API}/predictions`, {
         withCredentials: true,
+        timeout: 2500,
       });
-      setPredictions(response.data);
+      // Combine API predictions with local if any unique
+      const combined = [...response.data];
+      localPreds.forEach((lp) => {
+        if (!combined.some((p) => p.prediction_id === lp.prediction_id)) {
+          combined.push(lp);
+        }
+      });
+      setPredictions(combined);
     } catch (error) {
-      toast.error('Failed to load records');
+      setPredictions(localPreds);
     } finally {
       setLoading(false);
     }
@@ -53,26 +66,32 @@ const History = () => {
 
   const handleDelete = async (predictionId) => {
     try {
-      await axios.delete(`${API}/predictions/${predictionId}`, { withCredentials: true });
-      toast.success('Record deleted');
-      setPredictions((prev) => prev.filter((p) => p.prediction_id !== predictionId));
+      await axios.delete(`${API}/predictions/${predictionId}`, { withCredentials: true, timeout: 2000 });
     } catch (error) {
-      toast.error('Failed to delete record');
+      console.log('Delete offline:', error);
     }
+    
+    // Update local cache
+    try {
+      const prev = JSON.parse(localStorage.getItem('breastguard_predictions') || '[]');
+      localStorage.setItem('breastguard_predictions', JSON.stringify(prev.filter(p => p.prediction_id !== predictionId)));
+    } catch (e) {}
+
+    setPredictions((prev) => prev.filter((p) => p.prediction_id !== predictionId));
+    toast.success('Record deleted');
   };
 
   const handleClearAll = async () => {
     try {
-      await axios.delete(`${API}/predictions`, { withCredentials: true });
-      toast.success('All records cleared');
-      setPredictions([]);
-    } catch (error) {
-      toast.error('Failed to clear records');
-    }
+      await axios.delete(`${API}/predictions`, { withCredentials: true, timeout: 2000 });
+    } catch (error) {}
+    localStorage.removeItem('breastguard_predictions');
+    setPredictions([]);
+    toast.success('All records cleared');
   };
 
   const handleExportCSV = () => {
-    if (predictions.length === 0) {
+    if (filteredPredictions.length === 0) {
       toast.error('No records to export');
       return;
     }
@@ -123,7 +142,7 @@ const History = () => {
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex items-start justify-between mb-6">
+        <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
           <div>
             <h1
               className="text-3xl font-bold text-[#0F172A] mb-1"
@@ -133,7 +152,7 @@ const History = () => {
               Diagnostic Database Logs
             </h1>
             <p className="text-sm text-[#475569]">
-              Archived patient SVM evaluations under HIPAA compliance guidelines
+              Archived patient SVM evaluations under clinical compliance guidelines
             </p>
           </div>
 
@@ -174,7 +193,7 @@ const History = () => {
 
             <button
               onClick={handleExportCSV}
-              className="flex items-center space-x-1.5 px-3 py-2 bg-white border border-slate-200 text-[#0F172A] hover:bg-slate-50 rounded-md text-sm font-medium transition-colors duration-200"
+              className="flex items-center space-x-1.5 px-3 py-2 bg-white border border-slate-200 text-[#0F172A] hover:bg-slate-50 rounded-md text-sm font-medium transition-colors duration-200 shadow-sm"
               data-testid="export-csv-button"
             >
               <Download className="w-4 h-4 text-[#10B981]" />
@@ -183,9 +202,8 @@ const History = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-slate-200 p-5">
-          {/* Search and Filter row */}
-          <div className="flex items-center justify-between mb-5">
+        <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-5 flex-wrap gap-4">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8]" />
               <Input

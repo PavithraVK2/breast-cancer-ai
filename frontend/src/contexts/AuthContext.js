@@ -8,17 +8,34 @@ const API = process.env.REACT_APP_BACKEND_URL
   : 'http://localhost:8000/api';
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('breastguard_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [loading, setLoading] = useState(false);
 
   const checkAuth = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/auth/me`, {
-        withCredentials: true
+        withCredentials: true,
+        timeout: 3000,
       });
       setUser(response.data);
+      localStorage.setItem('breastguard_user', JSON.stringify(response.data));
     } catch (error) {
-      setUser(null);
+      // If offline or no backend reachable, preserve local session if present
+      const saved = localStorage.getItem('breastguard_user');
+      if (saved) {
+        try {
+          setUser(JSON.parse(saved));
+        } catch {
+          setUser(null);
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -34,14 +51,17 @@ export const AuthProvider = ({ children }) => {
 
   const login = (userData) => {
     setUser(userData);
+    localStorage.setItem('breastguard_user', JSON.stringify(userData));
   };
 
   const logout = async () => {
     try {
-      await axios.post(`${API}/auth/logout`, {}, { withCredentials: true });
-      setUser(null);
+      await axios.post(`${API}/auth/logout`, {}, { withCredentials: true, timeout: 2000 });
     } catch (error) {
-      console.error('Logout error:', error);
+      console.log('Logout offline:', error);
+    } finally {
+      localStorage.removeItem('breastguard_user');
+      setUser(null);
     }
   };
 
